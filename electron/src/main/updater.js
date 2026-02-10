@@ -77,7 +77,7 @@ function normalizeUpdaterError(err) {
     lower.includes('404') &&
     (lower.includes('authentication token') || lower.includes('double check'))
   ) {
-    return 'Private GitHub repo requires a token. Add GITHUB_TOKEN=... to apertureai.env and restart the app.';
+    return 'This app build is configured for private GitHub updates. Install the latest public-release build manually once (v1.0.4+) or set GITHUB_TOKEN if you keep private mode.';
   }
   if (
     lower.includes('code signature') &&
@@ -168,7 +168,7 @@ function initAutoUpdater(mainWindow) {
     state: 'idle',
     message: updaterState.hasGitHubToken
       ? 'Auto-update enabled. Auth token loaded. Waiting for next check.'
-      : 'Auto-update enabled, but no GITHUB_TOKEN found. Private repos need GITHUB_TOKEN in apertureai.env.',
+      : 'Auto-update enabled. Waiting for next check.',
     availableVersion: null,
     downloadPercent: null,
     lastError: null

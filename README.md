@@ -87,10 +87,9 @@ What is already configured:
 - The app now checks for updates every 5 seconds while open.
 - When an update exists, a top banner shows a clear update message and button.
 
-Important for this repo:
-- `ShnakeIO/ApertureAI` is private, so installed apps need a GitHub token at runtime.
-- Do not edit the signed app bundle to add token values.
-- Add this in the user config file:
+GitHub token notes:
+- For a public repo, no token is required for app updates.
+- If you switch repo visibility to private later, add token in:
 `~/Library/Application Support/ApertureAI/apertureai.env`
 
 ```bash
