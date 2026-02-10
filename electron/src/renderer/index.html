@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline';">
+  <title>ApertureAI</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app">
+    <!-- Update Banner -->
+    <div id="update-banner" class="update-banner hidden">
+      <span id="update-text">Update available, downloading...</span>
+      <button id="update-restart-btn" class="update-restart-btn hidden">Update Now</button>
+    </div>
+
+    <!-- Header -->
+    <div id="header">
+      <button id="sidebar-toggle" class="sidebar-toggle" title="Chat history & settings">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <rect x="1" y="2" width="16" height="14" rx="2" stroke="currentColor" stroke-width="1.5" fill="none"/>
+          <line x1="6.5" y1="2" x2="6.5" y2="16" stroke="currentColor" stroke-width="1.5"/>
+        </svg>
+      </button>
+      <div class="header-badge"></div>
+      <div class="header-text">
+        <div class="header-title">ApertureAI</div>
+        <div id="status-label" class="header-status">Ready</div>
+      </div>
+      <div class="header-hint">AI agent with Google Drive access</div>
+    </div>
+
+    <!-- Transcript -->
+    <div id="transcript">
+      <div id="transcript-inner"></div>
+    </div>
+
+    <!-- Guides View (hidden by default) -->
+    <div id="guides-view" class="hidden">
+      <div class="guides-header">
+        <div>
+          <div class="guides-title">Guides</div>
+          <div class="guides-subtitle">Browse step-by-step guides and visual walkthroughs.</div>
+        </div>
+        <button id="guides-back-btn" class="btn-orange guides-back-btn">Back to Chat</button>
+      </div>
+      <input type="search" id="guides-search" class="guides-search" placeholder="Search guides...">
+      <div class="guides-columns">
+        <div class="guides-list-card">
+          <div class="guides-list-title">Guide List</div>
+          <div id="guides-list" class="guides-list"></div>
+        </div>
+        <div class="guides-detail-card">
+          <div id="guides-detail-title" class="guides-detail-title">Select a guide to get started</div>
+          <div class="guides-steps-label">Visual Steps</div>
+          <div id="guides-steps" class="guides-steps"></div>
+          <div id="guides-detail-body" class="guides-detail-body">Choose a guide from the left list, then click it to load details.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Composer -->
+    <div id="composer">
+      <input type="text" id="input-field" placeholder="Message ApertureAI..." autocomplete="off">
+      <button id="send-btn" class="send-btn">Send</button>
+    </div>
+
+    <!-- Side Panel Overlay -->
+    <div id="side-panel-overlay" class="side-panel-overlay hidden">
+      <div class="side-panel-dim"></div>
+      <div id="side-panel" class="side-panel">
+        <div class="panel-header">
+          <button id="panel-guides-btn" class="btn-orange panel-guides-btn">Guides</button>
+          <div class="panel-header-right">
+            <button id="panel-settings-btn" class="panel-icon-btn" title="Settings">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+                <path d="M8 10a2 2 0 100-4 2 2 0 000 4zm6.32-1.906l-1.12-.65a5.07 5.07 0 000-1.288l1.12-.65a.32.32 0 00.146-.373 6.44 6.44 0 00-1.414-2.45.32.32 0 00-.396-.073l-1.12.648a5.1 5.1 0 00-1.116-.644V1.316a.32.32 0 00-.252-.313 6.52 6.52 0 00-2.828 0 .32.32 0 00-.252.313v1.298a5.1 5.1 0 00-1.116.644l-1.12-.648a.32.32 0 00-.396.072A6.44 6.44 0 003.534 5.13a.32.32 0 00.146.374l1.12.65a5.07 5.07 0 000 1.288l-1.12.65a.32.32 0 00-.146.374 6.44 6.44 0 001.414 2.45.32.32 0 00.396.072l1.12-.648c.345.27.72.488 1.116.644v1.298a.32.32 0 00.252.313 6.52 6.52 0 002.828 0 .32.32 0 00.252-.313v-1.298a5.1 5.1 0 001.116-.644l1.12.648a.32.32 0 00.396-.072 6.44 6.44 0 001.414-2.45.32.32 0 00-.146-.374z"/>
+              </svg>
+            </button>
+            <button id="panel-close-btn" class="panel-icon-btn" title="Close">&times;</button>
+          </div>
+        </div>
+        <button id="new-chat-btn" class="btn-orange new-chat-btn">+ New Chat</button>
+        <div class="panel-chats-label">Chats</div>
+        <div id="history-list" class="history-list">
+          <div class="history-empty">No previous chats yet.</div>
+        </div>
+        <div class="panel-separator"></div>
+        <div id="settings-section" class="settings-section">
+          <div class="settings-title">Settings</div>
+          <div id="settings-api" class="settings-row"></div>
+          <div id="settings-model" class="settings-row"></div>
+          <div id="settings-drive" class="settings-row"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="chat.js"></script>
+  <script src="sidebar.js"></script>
+  <script src="guides.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

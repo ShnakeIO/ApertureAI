@@ -1,0 +1,7 @@
+build/
+*.xcworkspace
+*.xcodeproj
+*.swp
+*.DS_Store
+src/apertureai.env
+src/*.json

@@ -1,0 +1,24 @@
+{
+  "name": "apertureai",
+  "version": "1.0.0",
+  "description": "AI assistant with Google Drive access",
+  "main": "src/main/main.js",
+  "scripts": {
+    "start": "unset ELECTRON_RUN_AS_NODE && electron .",
+    "build": "electron-builder --win --mac",
+    "build:win": "electron-builder --win",
+    "build:mac": "electron-builder --mac",
+    "release": "electron-builder --win --mac --publish always"
+  },
+  "author": "ApertureAI",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "electron-updater": "^6.3.9",
+    "mammoth": "^1.8.0",
+    "pdf-parse": "^2.4.5"
+  },
+  "devDependencies": {
+    "electron": "^33.4.11",
+    "electron-builder": "^25.1.8"
+  }
+}

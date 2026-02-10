@@ -1,0 +1,25 @@
+appId: com.apertureai.desktop
+productName: ApertureAI
+directories:
+  output: dist
+files:
+  - src/**/*
+extraResources:
+  - from: resources/apertureai.env
+    to: apertureai.env
+  - from: resources/apertureai-sa.json
+    to: apertureai-sa.json
+win:
+  target: nsis
+  icon: resources/icon.png
+nsis:
+  oneClick: true
+  perMachine: false
+  allowToChangeInstallationDirectory: false
+mac:
+  target: zip
+  icon: resources/icon.png
+publish:
+  provider: github
+  owner: ShnakeIO
+  repo: ApertureAI
