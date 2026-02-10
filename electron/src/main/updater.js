@@ -86,6 +86,13 @@ function normalizeUpdaterError(err) {
   ) {
     return 'Downloaded app has invalid macOS signature. Publish a build with valid signing (ad-hoc or Developer ID). Update to v1.0.2+ fixes this packaging issue.';
   }
+  if (
+    lower.includes('code signature') &&
+    lower.includes('did not pass validation') &&
+    lower.includes('code failed to satisfy specified code requirement')
+  ) {
+    return 'Current installed app has an incompatible signature requirement for auto-update. Install the latest release manually once (v1.0.3+), then future in-app updates will work.';
+  }
   return message;
 }
 

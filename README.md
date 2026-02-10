@@ -89,11 +89,17 @@ What is already configured:
 
 Important for this repo:
 - `ShnakeIO/ApertureAI` is private, so installed apps need a GitHub token at runtime.
-- Add this in your app env file (`electron/resources/apertureai.env` in packaged app setup):
+- Do not edit the signed app bundle to add token values.
+- Add this in the user config file:
+`~/Library/Application Support/ApertureAI/apertureai.env`
 
 ```bash
 GITHUB_TOKEN=YOUR_GITHUB_TOKEN
 ```
+
+If macOS updater shows:
+`code failed to satisfy specified code requirement(s)`
+install the latest release manually once, then in-app updates work from that point forward.
 
 To publish updates:
 

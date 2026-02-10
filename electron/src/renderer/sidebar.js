@@ -59,6 +59,7 @@ const Sidebar = (() => {
         `Google Drive: ${settings.hasDrive ? 'Connected' : 'Not configured'}\n` +
         `OneDrive: ${settings.hasOneDrive ? 'Connected' : 'Not configured'}\n` +
         `GitHub token: ${settings.hasGitHubToken ? 'Configured' : 'Missing'}\n` +
+        `User config file: ${settings.userConfigPath || 'Unknown'}\n` +
         `Auto-update state: ${updaterState}\n` +
         `Auto-update: ${updaterMessage}\n` +
         `Last auto-update error: ${updaterError}`

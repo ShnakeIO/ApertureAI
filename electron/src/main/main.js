@@ -1,7 +1,7 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const crypto = require('crypto');
-const { loadConfig, getConfigValue } = require('./config');
+const { loadConfig, getConfigValue, getUserConfigPath } = require('./config');
 const { defaultSystemPrompt, runAgentLoop, appendMemoryEntry, compactConversationIfNeeded } = require('./openai');
 const driveModule = require('./google-drive');
 const onedriveModule = require('./onedrive');
@@ -220,7 +220,8 @@ function registerIpcHandlers() {
     const hasDrive = driveModule.isConfigured();
     const hasOneDrive = onedriveModule.isConfigured();
     const hasGitHubToken = !!(getConfigValue('GITHUB_TOKEN') || getConfigValue('GH_TOKEN'));
-    return { hasApiKey, model, hasDrive, hasOneDrive, hasGitHubToken };
+    const userConfigPath = getUserConfigPath();
+    return { hasApiKey, model, hasDrive, hasOneDrive, hasGitHubToken, userConfigPath };
   });
 
   ipcMain.handle('guides:getCatalog', async () => {
