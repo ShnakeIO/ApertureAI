@@ -14,6 +14,7 @@ contextBridge.exposeInMainWorld('api', {
 
   // Update
   installUpdate: () => ipcRenderer.invoke('update:install'),
+  getUpdaterStatus: () => ipcRenderer.invoke('update:getStatus'),
 
   // Events from main process
   onThinking: (callback) => {
@@ -30,5 +31,8 @@ contextBridge.exposeInMainWorld('api', {
   },
   onUpdateNotAvailable: (callback) => {
     ipcRenderer.on('update:not-available', () => callback());
+  },
+  onUpdateStatus: (callback) => {
+    ipcRenderer.on('update:status', (_event, status) => callback(status));
   }
 });

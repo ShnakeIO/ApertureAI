@@ -2,6 +2,7 @@ appId: com.apertureai.desktop
 productName: ApertureAI
 directories:
   output: dist
+afterPack: scripts/after-pack.js
 files:
   - src/**/*
 extraResources:
@@ -23,3 +24,4 @@ publish:
   provider: github
   owner: ShnakeIO
   repo: ApertureAI
+  private: true

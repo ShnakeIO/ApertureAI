@@ -520,7 +520,9 @@ body {
   padding: 14px 16px;
   background: var(--soft-cream);
   flex-shrink: 0;
-  height: 130px;
+  min-height: 190px;
+  max-height: 220px;
+  overflow-y: auto;
 }
 
 .settings-title {
@@ -542,6 +544,10 @@ body {
 }
 .settings-row.muted {
   color: var(--muted-ink);
+}
+.settings-row.wrap {
+  white-space: normal;
+  word-break: break-word;
 }
 
 /* Guides View */

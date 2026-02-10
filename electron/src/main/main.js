@@ -6,7 +6,7 @@ const { defaultSystemPrompt, runAgentLoop, appendMemoryEntry, compactConversatio
 const driveModule = require('./google-drive');
 const onedriveModule = require('./onedrive');
 const { saveChatState, loadChatState, saveCurrentChatToHistory } = require('./persistence');
-const { initAutoUpdater, quitAndInstall, stopAutoUpdater } = require('./updater');
+const { initAutoUpdater, quitAndInstall, stopAutoUpdater, getUpdaterStatus } = require('./updater');
 
 let mainWindow = null;
 
@@ -219,7 +219,8 @@ function registerIpcHandlers() {
     const model = getConfigValue('OPENAI_MODEL') || 'gpt-4o-mini';
     const hasDrive = driveModule.isConfigured();
     const hasOneDrive = onedriveModule.isConfigured();
-    return { hasApiKey, model, hasDrive, hasOneDrive };
+    const hasGitHubToken = !!(getConfigValue('GITHUB_TOKEN') || getConfigValue('GH_TOKEN'));
+    return { hasApiKey, model, hasDrive, hasOneDrive, hasGitHubToken };
   });
 
   ipcMain.handle('guides:getCatalog', async () => {
@@ -312,6 +313,10 @@ function registerIpcHandlers() {
 
   ipcMain.handle('update:install', async () => {
     quitAndInstall();
+  });
+
+  ipcMain.handle('update:getStatus', async () => {
+    return getUpdaterStatus();
   });
 }
 

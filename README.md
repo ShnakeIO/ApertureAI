@@ -87,6 +87,14 @@ What is already configured:
 - The app now checks for updates every 5 seconds while open.
 - When an update exists, a top banner shows a clear update message and button.
 
+Important for this repo:
+- `ShnakeIO/ApertureAI` is private, so installed apps need a GitHub token at runtime.
+- Add this in your app env file (`electron/resources/apertureai.env` in packaged app setup):
+
+```bash
+GITHUB_TOKEN=YOUR_GITHUB_TOKEN
+```
+
 To publish updates:
 
 1. Bump version in `electron/package.json` (for example `1.0.0` -> `1.0.1`).
