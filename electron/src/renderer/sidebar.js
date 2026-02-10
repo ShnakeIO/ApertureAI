@@ -9,6 +9,16 @@ const Sidebar = (() => {
   let settingsUpdaterStatus = null;
   let settingsUpdaterCheck = null;
   let settingsUpdaterError = null;
+  let settingsFeedbackBtn = null;
+  let settingsFeedbackList = null;
+  let feedbackModal = null;
+  let feedbackBackdrop = null;
+  let feedbackCloseBtn = null;
+  let feedbackType = null;
+  let feedbackTitle = null;
+  let feedbackDetails = null;
+  let feedbackSubmitBtn = null;
+  let feedbackStatus = null;
   let visible = false;
 
   function init() {
@@ -20,6 +30,16 @@ const Sidebar = (() => {
     settingsUpdaterStatus = document.getElementById('settings-updater-status');
     settingsUpdaterCheck = document.getElementById('settings-updater-check');
     settingsUpdaterError = document.getElementById('settings-updater-error');
+    settingsFeedbackBtn = document.getElementById('settings-feedback-btn');
+    settingsFeedbackList = document.getElementById('settings-feedback-list');
+    feedbackModal = document.getElementById('feedback-modal');
+    feedbackBackdrop = document.getElementById('feedback-backdrop');
+    feedbackCloseBtn = document.getElementById('feedback-close-btn');
+    feedbackType = document.getElementById('feedback-type');
+    feedbackTitle = document.getElementById('feedback-title');
+    feedbackDetails = document.getElementById('feedback-details');
+    feedbackSubmitBtn = document.getElementById('feedback-submit-btn');
+    feedbackStatus = document.getElementById('feedback-status');
 
     // Close button
     document.getElementById('panel-close-btn').addEventListener('click', hide);
@@ -58,12 +78,25 @@ const Sidebar = (() => {
         `Model: ${settings.model}\n` +
         `Google Drive: ${settings.hasDrive ? 'Connected' : 'Not configured'}\n` +
         `OneDrive: ${settings.hasOneDrive ? 'Connected' : 'Not configured'}\n` +
+        `App version: ${settings.appVersion || 'unknown'}\n` +
         `GitHub token: ${settings.hasGitHubToken ? 'Configured' : 'Missing'}\n` +
+        `Feedback doc: ${settings.feedbackConfigured ? 'Configured' : 'Not configured'}\n` +
         `User config file: ${settings.userConfigPath || 'Unknown'}\n` +
         `Auto-update state: ${updaterState}\n` +
         `Auto-update: ${updaterMessage}\n` +
         `Last auto-update error: ${updaterError}`
       );
+    });
+
+    settingsFeedbackBtn.addEventListener('click', openFeedbackModal);
+    feedbackBackdrop.addEventListener('click', closeFeedbackModal);
+    feedbackCloseBtn.addEventListener('click', closeFeedbackModal);
+    feedbackSubmitBtn.addEventListener('click', submitFeedback);
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape' && feedbackModal && !feedbackModal.classList.contains('hidden')) {
+        closeFeedbackModal();
+      }
     });
 
     window.api.onUpdateStatus(() => {
@@ -95,6 +128,7 @@ const Sidebar = (() => {
   function hide() {
     if (!visible) return;
     visible = false;
+    closeFeedbackModal();
     overlay.classList.remove('visible');
     setTimeout(() => {
       overlay.classList.add('hidden');
@@ -152,14 +186,15 @@ const Sidebar = (() => {
   }
 
   async function refreshSettings() {
-    const [settings, updater] = await Promise.all([
+    const [settings, updater, reports] = await Promise.all([
       window.api.getSettings(),
-      window.api.getUpdaterStatus()
+      window.api.getUpdaterStatus(),
+      window.api.getFeedbackReports(8)
     ]);
 
     settingsApi.textContent = `API Key: ${settings.hasApiKey ? '\u2713 Configured' : '\u2717 Missing'}`;
     settingsApi.className = `settings-row ${settings.hasApiKey ? 'configured' : 'missing'}`;
-    settingsModel.textContent = `Model: ${settings.model}`;
+    settingsModel.textContent = `Model: ${settings.model} | App: v${settings.appVersion || 'unknown'}`;
     settingsModel.className = 'settings-row muted';
 
     const driveParts = [];
@@ -180,6 +215,7 @@ const Sidebar = (() => {
       settingsUpdaterCheck.className = 'settings-row muted';
       settingsUpdaterError.textContent = 'Last Error: Unknown';
       settingsUpdaterError.className = 'settings-row missing wrap';
+      renderFeedbackReports(reports);
       return;
     }
 
@@ -204,6 +240,99 @@ const Sidebar = (() => {
     } else {
       settingsUpdaterError.textContent = 'Last Error: None';
       settingsUpdaterError.className = 'settings-row configured';
+    }
+
+    renderFeedbackReports(reports);
+  }
+
+  function renderFeedbackReports(reports) {
+    settingsFeedbackList.innerHTML = '';
+    if (!Array.isArray(reports) || reports.length === 0) {
+      settingsFeedbackList.innerHTML = '<div class="feedback-empty">No reports yet.</div>';
+      return;
+    }
+
+    for (const report of reports) {
+      const item = document.createElement('div');
+      item.className = 'feedback-item';
+
+      const title = document.createElement('div');
+      title.className = 'feedback-item-title';
+      const prefix = report.type === 'feature' ? 'Feature' : 'Bug';
+      title.textContent = `${prefix}: ${report.title || 'Untitled report'}`;
+      item.appendChild(title);
+
+      const meta = document.createElement('div');
+      const statusText = report.syncStatus === 'synced' ? 'synced to Google Doc' : `failed: ${report.syncError || 'unknown error'}`;
+      meta.className = `feedback-item-meta${report.syncStatus === 'failed' ? ' failed' : ''}`;
+      meta.textContent = `${formatTime(report.createdAt)} • ${statusText}`;
+      item.appendChild(meta);
+
+      settingsFeedbackList.appendChild(item);
+    }
+  }
+
+  function openFeedbackModal() {
+    feedbackType.value = 'bug';
+    feedbackTitle.value = '';
+    feedbackDetails.value = '';
+    feedbackStatus.textContent = 'Sends to your configured Google Doc.';
+    feedbackStatus.className = 'feedback-status muted';
+    feedbackSubmitBtn.disabled = false;
+    feedbackSubmitBtn.textContent = 'Send Report';
+    feedbackModal.classList.remove('hidden');
+    feedbackTitle.focus();
+  }
+
+  function closeFeedbackModal() {
+    if (!feedbackModal) return;
+    feedbackModal.classList.add('hidden');
+  }
+
+  async function submitFeedback() {
+    const type = feedbackType.value === 'feature' ? 'feature' : 'bug';
+    const title = feedbackTitle.value.trim();
+    const details = feedbackDetails.value.trim();
+    if (!title || !details) {
+      feedbackStatus.textContent = 'Please fill out title and details.';
+      feedbackStatus.className = 'feedback-status error';
+      return;
+    }
+
+    feedbackSubmitBtn.disabled = true;
+    feedbackSubmitBtn.textContent = 'Sending...';
+    feedbackStatus.textContent = 'Sending report to Google Doc...';
+    feedbackStatus.className = 'feedback-status muted';
+
+    try {
+      const result = await window.api.submitFeedback({ type, title, details });
+      if (!result || !result.report) {
+        throw new Error('Unexpected feedback response.');
+      }
+
+      if (result.ok) {
+        feedbackStatus.textContent = 'Report sent successfully.';
+        feedbackStatus.className = 'feedback-status success';
+      } else {
+        feedbackStatus.textContent = `Saved locally, but Google Doc sync failed: ${result.report.syncError || 'Unknown error'}`;
+        feedbackStatus.className = 'feedback-status error';
+      }
+
+      await refreshSettings();
+
+      if (result.ok) {
+        setTimeout(() => {
+          closeFeedbackModal();
+        }, 700);
+      } else {
+        feedbackSubmitBtn.disabled = false;
+        feedbackSubmitBtn.textContent = 'Send Report';
+      }
+    } catch (err) {
+      feedbackStatus.textContent = `Failed to send: ${err.message || 'Unknown error'}`;
+      feedbackStatus.className = 'feedback-status error';
+      feedbackSubmitBtn.disabled = false;
+      feedbackSubmitBtn.textContent = 'Send Report';
     }
   }
 

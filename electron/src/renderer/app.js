@@ -4,6 +4,7 @@ const App = (() => {
   let inputField = null;
   let sendBtn = null;
   let statusLabel = null;
+  let headerHint = null;
   let updateBanner = null;
   let updateText = null;
   let updateBtn = null;
@@ -14,6 +15,7 @@ const App = (() => {
     inputField = document.getElementById('input-field');
     sendBtn = document.getElementById('send-btn');
     statusLabel = document.getElementById('status-label');
+    headerHint = document.getElementById('header-hint');
     updateBanner = document.getElementById('update-banner');
     updateText = document.getElementById('update-text');
     updateBtn = document.getElementById('update-restart-btn');
@@ -96,6 +98,17 @@ const App = (() => {
 
     // Status
     setStatus(data.status || 'Ready', data.status === 'No API key');
+    updateHeaderHint(data);
+  }
+
+  function updateHeaderHint(data) {
+    if (!headerHint) return;
+    const storage = [];
+    if (data.hasDrive) storage.push('Google Drive');
+    if (data.hasOneDrive) storage.push('OneDrive');
+    const storageText = storage.length > 0 ? `${storage.join(' + ')} access` : 'No storage connected';
+    const version = data.appVersion || 'unknown';
+    headerHint.textContent = `${storageText} • v${version}`;
   }
 
   async function sendMessage() {

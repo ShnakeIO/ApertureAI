@@ -28,7 +28,7 @@
         <div class="header-title">ApertureAI</div>
         <div id="status-label" class="header-status">Ready</div>
       </div>
-      <div class="header-hint">AI agent with Google Drive access</div>
+      <div id="header-hint" class="header-hint">Storage not configured • v-</div>
     </div>
 
     <!-- Transcript -->
@@ -88,14 +88,44 @@
         </div>
         <div class="panel-separator"></div>
         <div id="settings-section" class="settings-section">
-          <div class="settings-title">Settings</div>
+          <div class="settings-head">
+            <div class="settings-title">Settings</div>
+            <button id="settings-feedback-btn" class="settings-action-btn">Report Bug / Feature</button>
+          </div>
           <div id="settings-api" class="settings-row"></div>
           <div id="settings-model" class="settings-row"></div>
           <div id="settings-drive" class="settings-row"></div>
           <div id="settings-updater-status" class="settings-row"></div>
           <div id="settings-updater-check" class="settings-row"></div>
           <div id="settings-updater-error" class="settings-row"></div>
+          <div class="settings-subtitle">Recent Reports</div>
+          <div id="settings-feedback-list" class="feedback-list">
+            <div class="feedback-empty">No reports yet.</div>
+          </div>
         </div>
+      </div>
+    </div>
+
+    <div id="feedback-modal" class="feedback-modal hidden">
+      <div id="feedback-backdrop" class="feedback-backdrop"></div>
+      <div class="feedback-card">
+        <div class="feedback-card-head">
+          <div class="feedback-card-title">Report Bug or Feature</div>
+          <button id="feedback-close-btn" class="feedback-close-btn" title="Close">&times;</button>
+        </div>
+        <label class="feedback-label" for="feedback-type">Type</label>
+        <select id="feedback-type" class="feedback-select">
+          <option value="bug">Bug</option>
+          <option value="feature">Feature Request</option>
+        </select>
+        <label class="feedback-label" for="feedback-title">Title</label>
+        <input id="feedback-title" class="feedback-input" maxlength="160" placeholder="Short summary">
+        <label class="feedback-label" for="feedback-details">Details</label>
+        <textarea id="feedback-details" class="feedback-textarea" maxlength="3000" placeholder="What happened, and what should happen?"></textarea>
+        <div class="feedback-actions">
+          <button id="feedback-submit-btn" class="btn-orange feedback-submit-btn">Send Report</button>
+        </div>
+        <div id="feedback-status" class="feedback-status muted">Sends to your configured Google Doc.</div>
       </div>
     </div>
   </div>

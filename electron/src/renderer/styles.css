@@ -139,6 +139,7 @@ body {
   font-size: 13px;
   color: var(--muted-ink);
   white-space: nowrap;
+  text-align: right;
 }
 
 /* Transcript */
@@ -520,16 +521,49 @@ body {
   padding: 14px 16px;
   background: var(--soft-cream);
   flex-shrink: 0;
-  min-height: 190px;
-  max-height: 220px;
+  min-height: 250px;
+  max-height: 320px;
   overflow-y: auto;
+}
+
+.settings-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
 }
 
 .settings-title {
   font-size: 13px;
   font-weight: 600;
   color: var(--ink-color);
-  margin-bottom: 10px;
+}
+
+.settings-action-btn {
+  height: 26px;
+  border: 1px solid rgba(227, 115, 46, 0.35);
+  border-radius: 7px;
+  background: rgba(227, 115, 46, 0.08);
+  color: var(--warm-orange);
+  font-size: 11px;
+  font-weight: 600;
+  font-family: inherit;
+  padding: 0 8px;
+  cursor: pointer;
+}
+.settings-action-btn:hover {
+  background: rgba(227, 115, 46, 0.16);
+}
+
+.settings-subtitle {
+  margin-top: 8px;
+  margin-bottom: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted-ink);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .settings-row {
@@ -548,6 +582,156 @@ body {
 .settings-row.wrap {
   white-space: normal;
   word-break: break-word;
+}
+
+.feedback-list {
+  border: 1px solid rgba(237, 204, 176, 0.8);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.7);
+  padding: 6px 8px;
+  max-height: 130px;
+  overflow-y: auto;
+}
+
+.feedback-empty {
+  font-size: 12px;
+  color: var(--muted-ink);
+}
+
+.feedback-item {
+  border-bottom: 1px solid rgba(237, 204, 176, 0.55);
+  padding: 6px 0;
+}
+.feedback-item:last-child {
+  border-bottom: none;
+}
+
+.feedback-item-title {
+  font-size: 12px;
+  color: var(--ink-color);
+  font-weight: 600;
+}
+
+.feedback-item-meta {
+  margin-top: 2px;
+  font-size: 11px;
+  color: var(--muted-ink);
+}
+
+.feedback-item-meta.failed {
+  color: var(--error-red);
+}
+
+.feedback-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 220;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.feedback-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.24);
+}
+
+.feedback-card {
+  position: relative;
+  z-index: 221;
+  width: min(560px, calc(100vw - 40px));
+  background: white;
+  border-radius: 14px;
+  border: 1px solid rgba(237, 204, 176, 0.9);
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.16);
+  padding: 14px;
+}
+
+.feedback-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.feedback-card-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink-color);
+}
+
+.feedback-close-btn {
+  width: 26px;
+  height: 26px;
+  border: none;
+  background: transparent;
+  color: var(--muted-ink);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 6px;
+}
+.feedback-close-btn:hover {
+  background: rgba(227, 115, 46, 0.1);
+  color: var(--warm-orange);
+}
+
+.feedback-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 8px;
+  margin-bottom: 4px;
+  color: var(--muted-ink);
+}
+
+.feedback-select,
+.feedback-input,
+.feedback-textarea {
+  width: 100%;
+  border: 1px solid rgba(237, 186, 148, 0.9);
+  border-radius: 8px;
+  background: rgba(255, 252, 250, 1);
+  padding: 8px 10px;
+  font-size: 13px;
+  font-family: inherit;
+  color: var(--ink-color);
+}
+
+.feedback-select:focus,
+.feedback-input:focus,
+.feedback-textarea:focus {
+  outline: none;
+  border-color: var(--warm-orange);
+}
+
+.feedback-textarea {
+  min-height: 140px;
+  resize: vertical;
+}
+
+.feedback-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
+}
+
+.feedback-submit-btn {
+  height: 34px;
+}
+
+.feedback-status {
+  margin-top: 10px;
+  font-size: 12px;
+}
+
+.feedback-status.error {
+  color: var(--error-red);
+}
+
+.feedback-status.success {
+  color: #34a853;
 }
 
 /* Guides View */
@@ -738,4 +922,25 @@ body {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(200, 180, 160, 0.7);
+}
+
+@media (max-width: 860px) {
+  #header {
+    height: auto;
+    min-height: 76px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+
+  .header-hint {
+    white-space: normal;
+    max-width: 44%;
+    font-size: 12px;
+    line-height: 1.3;
+  }
+
+  .settings-action-btn {
+    font-size: 10px;
+    padding: 0 6px;
+  }
 }

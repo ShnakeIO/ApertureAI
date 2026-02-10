@@ -7,6 +7,9 @@ contextBridge.exposeInMainWorld('api', {
   loadChat: (chatId) => ipcRenderer.invoke('chat:loadChat', chatId),
   getHistory: () => ipcRenderer.invoke('chat:getHistory'),
   getSettings: () => ipcRenderer.invoke('chat:getSettings'),
+  submitFeedback: (payload) => ipcRenderer.invoke('feedback:submit', payload),
+  getFeedbackReports: (limit) => ipcRenderer.invoke('feedback:list', limit),
+  getFeedbackStatus: () => ipcRenderer.invoke('feedback:status'),
 
   // Guides
   getGuidesCatalog: () => ipcRenderer.invoke('guides:getCatalog'),

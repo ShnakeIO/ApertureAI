@@ -5,6 +5,7 @@ const { loadConfig, getConfigValue, getUserConfigPath } = require('./config');
 const { defaultSystemPrompt, runAgentLoop, appendMemoryEntry, compactConversationIfNeeded } = require('./openai');
 const driveModule = require('./google-drive');
 const onedriveModule = require('./onedrive');
+const feedbackModule = require('./feedback');
 const { saveChatState, loadChatState, saveCurrentChatToHistory } = require('./persistence');
 const { initAutoUpdater, quitAndInstall, stopAutoUpdater, getUpdaterStatus } = require('./updater');
 
@@ -109,6 +110,7 @@ function getStartupData(restoredState) {
     hasDrive,
     hasOneDrive,
     model,
+    appVersion: app.getVersion(),
     status: hasApiKey ? 'Ready' : 'No API key'
   };
 }
@@ -221,7 +223,46 @@ function registerIpcHandlers() {
     const hasOneDrive = onedriveModule.isConfigured();
     const hasGitHubToken = !!(getConfigValue('GITHUB_TOKEN') || getConfigValue('GH_TOKEN'));
     const userConfigPath = getUserConfigPath();
-    return { hasApiKey, model, hasDrive, hasOneDrive, hasGitHubToken, userConfigPath };
+    const feedbackStatus = feedbackModule.getStatus();
+    return {
+      hasApiKey,
+      model,
+      hasDrive,
+      hasOneDrive,
+      hasGitHubToken,
+      userConfigPath,
+      appVersion: app.getVersion(),
+      feedbackConfigured: feedbackStatus.configured,
+      feedbackDocId: feedbackStatus.docId
+    };
+  });
+
+  ipcMain.handle('feedback:status', async () => {
+    return feedbackModule.getStatus();
+  });
+
+  ipcMain.handle('feedback:list', async (_event, limit) => {
+    return feedbackModule.listReports(limit);
+  });
+
+  ipcMain.handle('feedback:submit', async (_event, payload) => {
+    const hasDrive = driveModule.isConfigured();
+    const hasOneDrive = onedriveModule.isConfigured();
+    const storageSummary =
+      hasDrive && hasOneDrive
+        ? 'Google Drive + OneDrive'
+        : hasDrive
+          ? 'Google Drive'
+          : hasOneDrive
+            ? 'OneDrive'
+            : 'Not configured';
+
+    return feedbackModule.submitReport({
+      ...payload,
+      appVersion: app.getVersion(),
+      model: getConfigValue('OPENAI_MODEL') || 'gpt-4o-mini',
+      storageSummary
+    });
   });
 
   ipcMain.handle('guides:getCatalog', async () => {
