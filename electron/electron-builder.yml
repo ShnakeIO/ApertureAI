@@ -24,3 +24,4 @@ publish:
   provider: github
   owner: ShnakeIO
   repo: ApertureAI
+  releaseType: release
