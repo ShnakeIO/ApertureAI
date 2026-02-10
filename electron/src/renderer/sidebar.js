@@ -183,7 +183,7 @@ const Sidebar = (() => {
       return;
     }
 
-    const tokenLabel = updater.hasGitHubToken ? 'token OK' : 'token missing';
+    const tokenLabel = updater.hasGitHubToken ? 'token OK' : 'no token (public repo)';
     settingsUpdaterStatus.textContent = `Auto Update: ${updater.message || updater.state || 'Unknown'} (${tokenLabel})`;
     if (!updater.enabled || updater.state === 'disabled') {
       settingsUpdaterStatus.className = 'settings-row muted';
