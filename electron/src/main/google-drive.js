@@ -116,8 +116,23 @@ async function listFiles(folderId) {
 
 async function searchFiles(queryText) {
   const token = await ensureAccessToken();
-  const safeQuery = queryText.replace(/'/g, "\\'");
-  const q = encodeURIComponent(`trashed=false and name contains '${safeQuery}'`);
+  const raw = String(queryText || '').trim();
+  if (!raw) return JSON.stringify({ files: [] });
+
+  // More forgiving matching: multi-word queries should match tokens in any order.
+  const tokens = raw
+    .split(/[^a-zA-Z0-9]+/g)
+    .map(t => t.trim())
+    .filter(t => t.length >= 2)
+    .slice(0, 6)
+    .map(t => t.replace(/'/g, "\\'"));
+
+  const qExpr =
+    tokens.length > 1
+      ? tokens.map(t => `name contains '${t}'`).join(' and ')
+      : `name contains '${raw.replace(/'/g, "\\'")}'`;
+
+  const q = encodeURIComponent(`trashed=false and (${qExpr})`);
   const fields = encodeURIComponent('files(id,name,mimeType,size,modifiedTime,webViewLink,parents)');
   const url = `https://www.googleapis.com/drive/v3/files?q=${q}&fields=${fields}&pageSize=100&orderBy=modifiedTime+desc&supportsAllDrives=true&includeItemsFromAllDrives=true&corpora=allDrives`;
 

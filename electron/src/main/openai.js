@@ -1,5 +1,46 @@
 const { getConfigValue } = require('./config');
 
+function looksLikeStorageQuestion(text) {
+  if (!text || typeof text !== 'string') return false;
+  const t = text.toLowerCase();
+
+  // Direct links
+  if (t.includes('drive.google.com') || t.includes('docs.google.com')) return true;
+  if (t.includes('onedrive.live.com') || t.includes('sharepoint.com')) return true;
+
+  // Strong storage/filetype keywords
+  const strongKeywords = [
+    'google drive',
+    'gdrive',
+    'drive',
+    'onedrive',
+    'sharepoint',
+    'folder',
+    'folders',
+    'document',
+    'documents',
+    'spreadsheet',
+    'sheet',
+    'sheets',
+    'slides',
+    'presentation',
+    'pdf',
+    'docx',
+    'xlsx',
+    'ppt',
+    'pptx',
+    'csv'
+  ];
+  if (strongKeywords.some(k => t.includes(k))) return true;
+
+  // "Find/open/read/list ..." + "file/doc/folder/..."
+  const verb = /\b(find|search|look up|lookup|open|read|summarize|review|analyze|scan|list|browse|show)\b/;
+  const noun = /\b(file|files|doc|docs|document|documents|folder|folders|spreadsheet|sheet|slides|pdf)\b/;
+  if (verb.test(t) && noun.test(t)) return true;
+
+  return false;
+}
+
 function getGoogleDriveTools() {
   return [
     {
@@ -114,6 +155,7 @@ function defaultSystemPrompt(hasDrive, hasOneDrive) {
 
   if (hasDrive || hasOneDrive) {
     parts.push('You have tools to browse and read files from the user\'s cloud storage. When the user asks about their files or data, USE YOUR TOOLS to look up the actual content — do not guess or make things up from file names alone.');
+    parts.push('Before you claim a file/folder does not exist or you cannot find it, you MUST run at least one storage tool call (search first, then list/browse if needed).');
   }
 
   if (hasDrive) {
@@ -218,6 +260,9 @@ async function sendChatCompletion(messages, tools, config) {
   };
   if (tools && tools.length > 0) {
     body.tools = tools;
+    if (config.toolChoice) {
+      body.tool_choice = config.toolChoice;
+    }
   }
 
   const headers = {
@@ -279,6 +324,27 @@ async function runAgentLoop(state, driveModule, onThinking, onedriveModule) {
 
   while (iterations > 0) {
     iterations--;
+
+    // If the user is asking about storage/files, force at least one tool call before answering.
+    if (tools && tools.length > 0 && (hasDrive || hasOneDrive)) {
+      let lastUserIdx = -1;
+      for (let i = conversationMessages.length - 1; i >= 0; i--) {
+        if (conversationMessages[i]?.role === 'user') {
+          lastUserIdx = i;
+          break;
+        }
+      }
+
+      if (lastUserIdx >= 0) {
+        const lastUserText = conversationMessages[lastUserIdx]?.content || '';
+        const hasToolSinceLastUser = conversationMessages.slice(lastUserIdx + 1).some(m => m?.role === 'tool');
+        if (!hasToolSinceLastUser && looksLikeStorageQuestion(lastUserText)) {
+          config.toolChoice = 'required';
+        } else {
+          config.toolChoice = null;
+        }
+      }
+    }
 
     // Compact before sending
     const compacted = compactConversationIfNeeded(conversationMessages, memoryEntries);
