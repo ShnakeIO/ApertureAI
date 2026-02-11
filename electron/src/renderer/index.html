@@ -87,20 +87,25 @@
           <div class="history-empty">No previous chats yet.</div>
         </div>
         <div class="panel-separator"></div>
-        <div id="settings-section" class="settings-section">
-          <div class="settings-head">
-            <div class="settings-title">Settings</div>
-            <button id="settings-feedback-btn" class="settings-action-btn">Report Bug / Feature</button>
-          </div>
-          <div id="settings-api" class="settings-row"></div>
-          <div id="settings-model" class="settings-row"></div>
-          <div id="settings-drive" class="settings-row"></div>
-          <div id="settings-updater-status" class="settings-row"></div>
-          <div id="settings-updater-check" class="settings-row"></div>
-          <div id="settings-updater-error" class="settings-row"></div>
-          <div class="settings-subtitle">Recent Reports</div>
-          <div id="settings-feedback-list" class="feedback-list">
-            <div class="feedback-empty">No reports yet.</div>
+        <div id="settings-section" class="settings-section collapsed">
+          <button id="settings-toggle-btn" class="settings-toggle-btn" title="Expand settings">
+            <span class="settings-title">Settings</span>
+            <span id="settings-toggle-indicator" class="settings-toggle-indicator">▸</span>
+          </button>
+          <div id="settings-body" class="settings-body hidden">
+            <div class="settings-actions">
+              <button id="settings-feedback-btn" class="settings-action-btn">Report Bug / Feature</button>
+            </div>
+            <div id="settings-api" class="settings-row"></div>
+            <div id="settings-model" class="settings-row"></div>
+            <div id="settings-drive" class="settings-row"></div>
+            <div id="settings-updater-status" class="settings-row"></div>
+            <div id="settings-updater-check" class="settings-row"></div>
+            <div id="settings-updater-error" class="settings-row"></div>
+            <div class="settings-subtitle">Recent Reports</div>
+            <div id="settings-feedback-list" class="feedback-list">
+              <div class="feedback-empty">No reports yet.</div>
+            </div>
           </div>
         </div>
       </div>

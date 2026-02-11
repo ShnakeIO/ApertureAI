@@ -3,6 +3,10 @@
 const Sidebar = (() => {
   let overlay = null;
   let historyList = null;
+  let settingsSection = null;
+  let settingsBody = null;
+  let settingsToggleBtn = null;
+  let settingsToggleIndicator = null;
   let settingsApi = null;
   let settingsModel = null;
   let settingsDrive = null;
@@ -20,10 +24,15 @@ const Sidebar = (() => {
   let feedbackSubmitBtn = null;
   let feedbackStatus = null;
   let visible = false;
+  let settingsExpanded = false;
 
   function init() {
     overlay = document.getElementById('side-panel-overlay');
     historyList = document.getElementById('history-list');
+    settingsSection = document.getElementById('settings-section');
+    settingsBody = document.getElementById('settings-body');
+    settingsToggleBtn = document.getElementById('settings-toggle-btn');
+    settingsToggleIndicator = document.getElementById('settings-toggle-indicator');
     settingsApi = document.getElementById('settings-api');
     settingsModel = document.getElementById('settings-model');
     settingsDrive = document.getElementById('settings-drive');
@@ -89,6 +98,9 @@ const Sidebar = (() => {
     });
 
     settingsFeedbackBtn.addEventListener('click', openFeedbackModal);
+    settingsToggleBtn.addEventListener('click', () => {
+      setSettingsExpanded(!settingsExpanded);
+    });
     feedbackBackdrop.addEventListener('click', closeFeedbackModal);
     feedbackCloseBtn.addEventListener('click', closeFeedbackModal);
     feedbackSubmitBtn.addEventListener('click', submitFeedback);
@@ -104,6 +116,8 @@ const Sidebar = (() => {
         refreshSettings();
       }
     });
+
+    setSettingsExpanded(false);
   }
 
   function toggle() {
@@ -128,11 +142,29 @@ const Sidebar = (() => {
   function hide() {
     if (!visible) return;
     visible = false;
+    setSettingsExpanded(false);
     closeFeedbackModal();
     overlay.classList.remove('visible');
     setTimeout(() => {
       overlay.classList.add('hidden');
     }, 350);
+  }
+
+  function setSettingsExpanded(expanded) {
+    settingsExpanded = !!expanded;
+    if (settingsExpanded) {
+      settingsSection.classList.add('expanded');
+      settingsSection.classList.remove('collapsed');
+      settingsBody.classList.remove('hidden');
+      settingsToggleIndicator.textContent = '▾';
+      settingsToggleBtn.title = 'Collapse settings';
+      return;
+    }
+    settingsSection.classList.remove('expanded');
+    settingsSection.classList.add('collapsed');
+    settingsBody.classList.add('hidden');
+    settingsToggleIndicator.textContent = '▸';
+    settingsToggleBtn.title = 'Expand settings';
   }
 
   function relativeTimeString(timestamp) {
@@ -273,6 +305,7 @@ const Sidebar = (() => {
   }
 
   function openFeedbackModal() {
+    setSettingsExpanded(true);
     feedbackType.value = 'bug';
     feedbackTitle.value = '';
     feedbackDetails.value = '';
