@@ -12,14 +12,14 @@ extraResources:
     to: apertureai-sa.json
 win:
   target: nsis
-  icon: resources/icon.png
+  icon: resources/icon.ico
 nsis:
   oneClick: true
   perMachine: false
   allowToChangeInstallationDirectory: false
 mac:
   target: zip
-  icon: resources/icon.png
+  icon: resources/icon.icns
 publish:
   provider: github
   owner: ShnakeIO
