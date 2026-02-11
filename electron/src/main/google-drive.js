@@ -98,10 +98,13 @@ async function listFiles(folderId) {
   if (folderId) {
     query = encodeURIComponent(`'${folderId}' in parents and trashed=false`);
   } else {
-    query = encodeURIComponent(`sharedWithMe=true and trashed=false`);
+    // When a folder is shared with the service account, the folder itself is "sharedWithMe",
+    // but the files inside it typically are not. Listing everything accessible ensures the
+    // agent can discover files inside shared folders without needing IDs upfront.
+    query = encodeURIComponent(`trashed=false`);
   }
   const fields = encodeURIComponent('files(id,name,mimeType,size,modifiedTime,webViewLink,parents)');
-  const url = `https://www.googleapis.com/drive/v3/files?q=${query}&fields=${fields}&pageSize=100&orderBy=modifiedTime+desc&supportsAllDrives=true&includeItemsFromAllDrives=true`;
+  const url = `https://www.googleapis.com/drive/v3/files?q=${query}&fields=${fields}&pageSize=100&orderBy=modifiedTime+desc&supportsAllDrives=true&includeItemsFromAllDrives=true&corpora=allDrives`;
 
   const response = await driveRequest(url, token);
   if (!response.ok) {
@@ -116,7 +119,7 @@ async function searchFiles(queryText) {
   const safeQuery = queryText.replace(/'/g, "\\'");
   const q = encodeURIComponent(`trashed=false and name contains '${safeQuery}'`);
   const fields = encodeURIComponent('files(id,name,mimeType,size,modifiedTime,webViewLink,parents)');
-  const url = `https://www.googleapis.com/drive/v3/files?q=${q}&fields=${fields}&pageSize=100&orderBy=modifiedTime+desc&supportsAllDrives=true&includeItemsFromAllDrives=true`;
+  const url = `https://www.googleapis.com/drive/v3/files?q=${q}&fields=${fields}&pageSize=100&orderBy=modifiedTime+desc&supportsAllDrives=true&includeItemsFromAllDrives=true&corpora=allDrives`;
 
   const response = await driveRequest(url, token);
   if (!response.ok) {

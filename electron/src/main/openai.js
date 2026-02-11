@@ -6,11 +6,11 @@ function getGoogleDriveTools() {
       type: 'function',
       function: {
         name: 'list_drive_files',
-        description: 'List files and folders in a Google Drive folder, or list all shared files if no folder_id is provided. Returns file names, IDs, types, parent IDs, and webViewLink URLs.',
+        description: 'List files and folders in a Google Drive folder. If no folder_id is provided, lists all files the service account can access (including files inside shared folders). Returns file names, IDs, types, parent IDs, and webViewLink URLs.',
         parameters: {
           type: 'object',
           properties: {
-            folder_id: { type: 'string', description: 'Optional. The Google Drive folder ID to list contents of. If omitted, lists all files shared with the service account.' }
+            folder_id: { type: 'string', description: 'Optional. The Google Drive folder ID to list contents of. If omitted, lists all accessible files.' }
           }
         }
       }
@@ -121,7 +121,7 @@ function defaultSystemPrompt(hasDrive, hasOneDrive) {
     if (driveFolderId) {
       parts.push(`For Google Drive: The root folder ID is ${driveFolderId}. When listing files, start with that root folder ID.`);
     } else {
-      parts.push('For Google Drive: Use list_drive_files with no folder_id to see all shared files, or use search_drive_files to find files by name.');
+      parts.push('For Google Drive: Use list_drive_files with no folder_id to see all accessible files, or use search_drive_files to find files by name.');
     }
     parts.push('For Google Docs/Sheets/Slides, use export mode. For PDF and DOCX files, use read_drive_file for extracted text.');
   }
