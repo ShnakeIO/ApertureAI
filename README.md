@@ -41,7 +41,7 @@ export OPENAI_ORGANIZATION="org_..."
 
 1. Enable the Google Drive API in your Google Cloud project.
 2. Create a service account key JSON and place it in `src/` (example: `src/my-service-account.json`).
-3. Share the target Google Drive folder with the service account email (`...@...iam.gserviceaccount.com`) as Viewer.
+3. Share files/folders with the service account email (`...@...iam.gserviceaccount.com`) as Viewer.
 4. Set these values in `src/apertureai.env`:
 
 ```bash
@@ -51,6 +51,10 @@ GOOGLE_SERVICE_ACCOUNT_FILE=src/my-service-account.json
 
 Folder ID example:
 `https://drive.google.com/drive/folders/<FOLDER_ID>`
+
+`GOOGLE_DRIVE_FOLDER_ID` is optional:
+- Set it to lock browsing to one folder tree.
+- Leave it unset to let the app search/list all items shared with the service account across multiple folders.
 
 ## OneDrive / SharePoint setup (optional)
 
