@@ -10,6 +10,7 @@ contextBridge.exposeInMainWorld('api', {
   submitFeedback: (payload) => ipcRenderer.invoke('feedback:submit', payload),
   getFeedbackReports: (limit) => ipcRenderer.invoke('feedback:list', limit),
   getFeedbackStatus: () => ipcRenderer.invoke('feedback:status'),
+  uploadKnowledgeFiles: () => ipcRenderer.invoke('knowledge:uploadFiles'),
 
   // Guides
   getGuidesCatalog: () => ipcRenderer.invoke('guides:getCatalog'),

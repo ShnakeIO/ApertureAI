@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
 const crypto = require('crypto');
 const { loadConfig, getConfigValue, getUserConfigPath } = require('./config');
@@ -18,6 +18,7 @@ let currentChatId = crypto.randomUUID();
 let memoryEntries = [];
 let lastUserPrompt = '';
 let requestInFlight = false;
+const KNOWLEDGE_BASE_FOLDER_ID = '1qQ1W2iMSis5pKn5mqjVFLgBPT-Gh0sQt';
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -263,6 +264,27 @@ function registerIpcHandlers() {
       model: getConfigValue('OPENAI_MODEL') || 'gpt-4o-mini',
       storageSummary
     });
+  });
+
+  ipcMain.handle('knowledge:uploadFiles', async () => {
+    if (!driveModule.isConfigured()) {
+      return { error: 'Google Drive is not configured.' };
+    }
+
+    const selection = await dialog.showOpenDialog(mainWindow, {
+      title: 'Select files to add to the knowledge base',
+      properties: ['openFile', 'multiSelections']
+    });
+
+    if (selection.canceled || !Array.isArray(selection.filePaths) || selection.filePaths.length === 0) {
+      return { canceled: true };
+    }
+
+    try {
+      return await driveModule.uploadFiles(selection.filePaths, KNOWLEDGE_BASE_FOLDER_ID);
+    } catch (err) {
+      return { error: err.message || 'Upload failed.' };
+    }
   });
 
   ipcMain.handle('guides:getCatalog', async () => {

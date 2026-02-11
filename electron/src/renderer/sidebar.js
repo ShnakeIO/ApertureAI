@@ -7,6 +7,7 @@ const Sidebar = (() => {
   let settingsBody = null;
   let settingsToggleBtn = null;
   let settingsToggleIndicator = null;
+  let panelUploadBtn = null;
   let settingsApi = null;
   let settingsModel = null;
   let settingsDrive = null;
@@ -33,6 +34,7 @@ const Sidebar = (() => {
     settingsBody = document.getElementById('settings-body');
     settingsToggleBtn = document.getElementById('settings-toggle-btn');
     settingsToggleIndicator = document.getElementById('settings-toggle-indicator');
+    panelUploadBtn = document.getElementById('panel-upload-btn');
     settingsApi = document.getElementById('settings-api');
     settingsModel = document.getElementById('settings-model');
     settingsDrive = document.getElementById('settings-drive');
@@ -72,6 +74,8 @@ const Sidebar = (() => {
       hide();
       Guides.show();
     });
+
+    panelUploadBtn.addEventListener('click', uploadKnowledgeFiles);
 
     // Settings button
     document.getElementById('panel-settings-btn').addEventListener('click', async () => {
@@ -375,6 +379,44 @@ const Sidebar = (() => {
       return new Date(isoText).toLocaleTimeString();
     } catch (err) {
       return 'invalid';
+    }
+  }
+
+  async function uploadKnowledgeFiles() {
+    if (!panelUploadBtn) return;
+
+    panelUploadBtn.disabled = true;
+    const originalLabel = panelUploadBtn.textContent;
+    panelUploadBtn.textContent = '…';
+
+    try {
+      const result = await window.api.uploadKnowledgeFiles();
+      if (!result || result.canceled) return;
+
+      if (result.error) {
+        alert(`Upload failed: ${result.error}`);
+        return;
+      }
+
+      const uploaded = Array.isArray(result.uploaded) ? result.uploaded : [];
+      const failed = Array.isArray(result.failed) ? result.failed : [];
+
+      if (uploaded.length === 0 && failed.length === 0) {
+        alert('No files were uploaded.');
+        return;
+      }
+
+      let message = `Uploaded ${uploaded.length} file${uploaded.length === 1 ? '' : 's'} to the knowledge base.`;
+      if (failed.length > 0) {
+        const failedNames = failed.map(item => item.name).slice(0, 4).join(', ');
+        message += `\nFailed ${failed.length}: ${failedNames}${failed.length > 4 ? ', ...' : ''}`;
+      }
+      alert(message);
+    } catch (err) {
+      alert(`Upload failed: ${err.message || 'Unknown error'}`);
+    } finally {
+      panelUploadBtn.disabled = false;
+      panelUploadBtn.textContent = originalLabel;
     }
   }
 

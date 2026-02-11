@@ -1,4 +1,5 @@
 const fs = require('fs');
+const path = require('path');
 const crypto = require('crypto');
 const { getConfigValue, getServiceAccountPath } = require('./config');
 const { extractText } = require('./file-extraction');
@@ -36,7 +37,7 @@ function createJWT() {
   const header = { alg: 'RS256', typ: 'JWT' };
   const claims = {
     iss: clientEmail,
-    scope: 'https://www.googleapis.com/auth/drive.readonly',
+    scope: 'https://www.googleapis.com/auth/drive',
     aud: tokenURI,
     iat: now,
     exp: now + 3600
@@ -98,13 +99,10 @@ async function listFiles(folderId) {
   if (folderId) {
     query = encodeURIComponent(`'${folderId}' in parents and trashed=false`);
   } else {
-    // When a folder is shared with the service account, the folder itself is "sharedWithMe",
-    // but the files inside it typically are not. Listing everything accessible ensures the
-    // agent can discover files inside shared folders without needing IDs upfront.
-    query = encodeURIComponent(`trashed=false`);
+    query = encodeURIComponent(`sharedWithMe=true and trashed=false`);
   }
   const fields = encodeURIComponent('files(id,name,mimeType,size,modifiedTime,webViewLink,parents)');
-  const url = `https://www.googleapis.com/drive/v3/files?q=${query}&fields=${fields}&pageSize=100&orderBy=modifiedTime+desc&supportsAllDrives=true&includeItemsFromAllDrives=true&corpora=allDrives`;
+  const url = `https://www.googleapis.com/drive/v3/files?q=${query}&fields=${fields}&pageSize=100&orderBy=modifiedTime+desc&supportsAllDrives=true&includeItemsFromAllDrives=true`;
 
   const response = await driveRequest(url, token);
   if (!response.ok) {
@@ -116,25 +114,10 @@ async function listFiles(folderId) {
 
 async function searchFiles(queryText) {
   const token = await ensureAccessToken();
-  const raw = String(queryText || '').trim();
-  if (!raw) return JSON.stringify({ files: [] });
-
-  // More forgiving matching: multi-word queries should match tokens in any order.
-  const tokens = raw
-    .split(/[^a-zA-Z0-9]+/g)
-    .map(t => t.trim())
-    .filter(t => t.length >= 2)
-    .slice(0, 6)
-    .map(t => t.replace(/'/g, "\\'"));
-
-  const qExpr =
-    tokens.length > 1
-      ? tokens.map(t => `name contains '${t}'`).join(' and ')
-      : `name contains '${raw.replace(/'/g, "\\'")}'`;
-
-  const q = encodeURIComponent(`trashed=false and (${qExpr})`);
+  const safeQuery = queryText.replace(/'/g, "\\'");
+  const q = encodeURIComponent(`trashed=false and name contains '${safeQuery}'`);
   const fields = encodeURIComponent('files(id,name,mimeType,size,modifiedTime,webViewLink,parents)');
-  const url = `https://www.googleapis.com/drive/v3/files?q=${q}&fields=${fields}&pageSize=100&orderBy=modifiedTime+desc&supportsAllDrives=true&includeItemsFromAllDrives=true&corpora=allDrives`;
+  const url = `https://www.googleapis.com/drive/v3/files?q=${q}&fields=${fields}&pageSize=100&orderBy=modifiedTime+desc&supportsAllDrives=true&includeItemsFromAllDrives=true`;
 
   const response = await driveRequest(url, token);
   if (!response.ok) {
@@ -239,4 +222,91 @@ async function readFile(fileId, isExport) {
   throw new Error(lastError || 'Could not read file.');
 }
 
-module.exports = { loadServiceAccount, isConfigured, listFiles, searchFiles, readFile };
+function mimeTypeFromPath(filePath) {
+  const ext = path.extname(filePath || '').toLowerCase();
+  const map = {
+    '.txt': 'text/plain',
+    '.md': 'text/markdown',
+    '.csv': 'text/csv',
+    '.tsv': 'text/tab-separated-values',
+    '.json': 'application/json',
+    '.pdf': 'application/pdf',
+    '.doc': 'application/msword',
+    '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    '.xls': 'application/vnd.ms-excel',
+    '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    '.ppt': 'application/vnd.ms-powerpoint',
+    '.pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    '.jpg': 'image/jpeg',
+    '.jpeg': 'image/jpeg',
+    '.png': 'image/png',
+    '.gif': 'image/gif',
+    '.webp': 'image/webp'
+  };
+  return map[ext] || 'application/octet-stream';
+}
+
+async function uploadSingleFile(filePath, folderId) {
+  const token = await ensureAccessToken();
+  const name = path.basename(filePath);
+  const content = fs.readFileSync(filePath);
+  const mimeType = mimeTypeFromPath(filePath);
+  const metadata = { name };
+  if (folderId) metadata.parents = [folderId];
+
+  const boundary = `apertureai-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  const metadataPart = Buffer.from(
+    `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(metadata)}\r\n`,
+    'utf8'
+  );
+  const fileHeader = Buffer.from(`--${boundary}\r\nContent-Type: ${mimeType}\r\n\r\n`, 'utf8');
+  const endPart = Buffer.from(`\r\n--${boundary}--`, 'utf8');
+  const body = Buffer.concat([metadataPart, fileHeader, content, endPart]);
+
+  const response = await fetch(
+    'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&supportsAllDrives=true&fields=id,name,mimeType,webViewLink',
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': `multipart/related; boundary=${boundary}`
+      },
+      body,
+      signal: AbortSignal.timeout(120000)
+    }
+  );
+
+  if (!response.ok) {
+    const bodyText = await response.text();
+    throw new Error(`HTTP ${response.status}: ${bodyText}`);
+  }
+
+  return await response.json();
+}
+
+async function uploadFiles(filePaths, folderId) {
+  if (!Array.isArray(filePaths) || filePaths.length === 0) {
+    return { uploaded: [], failed: [] };
+  }
+
+  const uploaded = [];
+  const failed = [];
+
+  for (const filePath of filePaths) {
+    const name = path.basename(filePath);
+    try {
+      const created = await uploadSingleFile(filePath, folderId);
+      uploaded.push({
+        id: created.id,
+        name: created.name || name,
+        webViewLink: created.webViewLink || (created.id ? `https://drive.google.com/open?id=${created.id}` : null)
+      });
+    } catch (err) {
+      failed.push({ name, error: err.message || 'Upload failed.' });
+    }
+  }
+
+  return { uploaded, failed };
+}
+
+module.exports = { loadServiceAccount, isConfigured, listFiles, searchFiles, readFile, uploadFiles };
