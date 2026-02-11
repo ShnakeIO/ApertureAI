@@ -93,21 +93,36 @@ function getConfigValue(key) {
 
 function getServiceAccountPath() {
   const saFile = getConfigValue('GOOGLE_SERVICE_ACCOUNT_FILE');
-  if (!saFile) return null;
-
-  // If it's an absolute path, use it directly
-  if (path.isAbsolute(saFile)) return saFile;
-
-  // Try relative to resources
   const resourcePath = getResourcePath('apertureai-sa.json');
-  if (fs.existsSync(resourcePath)) return resourcePath;
 
-  // Try relative to the config file location
-  const envDir = path.dirname(getResourcePath('apertureai.env'));
-  const relative = path.join(envDir, saFile);
-  if (fs.existsSync(relative)) return relative;
+  const candidates = [];
+  if (saFile && typeof saFile === 'string' && saFile.trim()) {
+    const trimmed = saFile.trim();
+    // If it's an absolute path, try it first.
+    if (path.isAbsolute(trimmed)) {
+      candidates.push(trimmed);
+    } else {
+      // Try relative to the config file location (packaged resources / dev resources).
+      const envDir = path.dirname(getResourcePath('apertureai.env'));
+      candidates.push(path.join(envDir, trimmed));
+      // Try relative to the current working directory as a last resort.
+      candidates.push(path.resolve(trimmed));
+    }
+  }
 
-  return resourcePath; // default fallback
+  // Always fallback to the packaged/dev resource name.
+  candidates.push(resourcePath);
+
+  for (const candidate of candidates) {
+    if (!candidate) continue;
+    try {
+      if (fs.existsSync(candidate)) return candidate;
+    } catch {
+      // ignore
+    }
+  }
+
+  return null;
 }
 
 module.exports = { loadConfig, getConfigValue, getServiceAccountPath, getResourcePath, getUserConfigPath };

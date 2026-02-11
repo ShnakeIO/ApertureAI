@@ -5,3 +5,5 @@ build/
 *.DS_Store
 src/apertureai.env
 src/*.json
+electron/resources/apertureai.env
+electron/resources/apertureai-sa.json
