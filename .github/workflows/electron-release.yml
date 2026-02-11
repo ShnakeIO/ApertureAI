@@ -27,7 +27,7 @@ jobs:
       - name: Inject Google Drive service account for packaged builds
         env:
           APERTUREAI_GOOGLE_SERVICE_ACCOUNT_JSON_B64: ${{ secrets.APERTUREAI_GOOGLE_SERVICE_ACCOUNT_JSON_B64 }}
-        run: node -e "const fs=require('fs'); const path=require('path'); const b64=(process.env.APERTUREAI_GOOGLE_SERVICE_ACCOUNT_JSON_B64||'').trim(); if(!b64){console.error('Missing GitHub Secret: APERTUREAI_GOOGLE_SERVICE_ACCOUNT_JSON_B64'); process.exit(1);} const buf=Buffer.from(b64,'base64'); const txt=buf.toString('utf8'); let parsed=null; try{parsed=JSON.parse(txt);}catch(e){console.error('Service account secret is not valid JSON.'); process.exit(1);} if(!parsed.client_email||!parsed.private_key){console.error('Service account JSON missing client_email/private_key.'); process.exit(1);} const out=path.join('resources','apertureai-sa.json'); fs.mkdirSync(path.dirname(out),{recursive:true}); fs.writeFileSync(out, txt, 'utf8'); const st=fs.statSync(out); console.log('Wrote', out, st.size, 'bytes for', parsed.client_email);"
+        run: node scripts/inject-service-account.js
 
       - name: Install deps
         run: npm ci
@@ -55,7 +55,7 @@ jobs:
       - name: Inject Google Drive service account for packaged builds
         env:
           APERTUREAI_GOOGLE_SERVICE_ACCOUNT_JSON_B64: ${{ secrets.APERTUREAI_GOOGLE_SERVICE_ACCOUNT_JSON_B64 }}
-        run: node -e "const fs=require('fs'); const path=require('path'); const b64=(process.env.APERTUREAI_GOOGLE_SERVICE_ACCOUNT_JSON_B64||'').trim(); if(!b64){console.error('Missing GitHub Secret: APERTUREAI_GOOGLE_SERVICE_ACCOUNT_JSON_B64'); process.exit(1);} const buf=Buffer.from(b64,'base64'); const txt=buf.toString('utf8'); let parsed=null; try{parsed=JSON.parse(txt);}catch(e){console.error('Service account secret is not valid JSON.'); process.exit(1);} if(!parsed.client_email||!parsed.private_key){console.error('Service account JSON missing client_email/private_key.'); process.exit(1);} const out=path.join('resources','apertureai-sa.json'); fs.mkdirSync(path.dirname(out),{recursive:true}); fs.writeFileSync(out, txt, 'utf8'); const st=fs.statSync(out); console.log('Wrote', out, st.size, 'bytes for', parsed.client_email);"
+        run: node scripts/inject-service-account.js
 
       - name: Install deps
         run: npm ci
